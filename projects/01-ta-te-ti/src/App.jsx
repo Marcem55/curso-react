@@ -6,15 +6,22 @@ import { checkEndGame, checkWinner } from './logic/board'
 import { WinnerModal } from './components/WinnerModal'
 import { Board } from './components/Board'
 import { Turns } from './components/Turns'
+import { clearGameFromStorage, saveGameInStorage } from './logic/localStorage'
 
 function App() {
-  const [board, setBoard] = useState(Array(9).fill(null))
-  const [turn, setTurn] = useState(TURNS.X)
+  const [board, setBoard] = useState(() => {
+    const boardFromStorage = window.localStorage.getItem('board')
+    return boardFromStorage ? JSON.parse(boardFromStorage) : Array(9).fill(null)
+  })
+  const [turn, setTurn] = useState(() => {
+    const turnFromStorage = window.localStorage.getItem('turn')
+    return turnFromStorage ? turnFromStorage : TURNS.X
+  })
   const [winner, setWinner] = useState(null) // null no hay ganador, false empate
 
   const updateBoard = (index) => {
     // no actualizamos el board si ya tiene algo o hay ganador
-    if(board[index] || winner) return
+    if (board[index] || winner) return
 
     // actualizamos el tablero
     const newBoard = [...board]
@@ -25,9 +32,12 @@ function App() {
     const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X
     setTurn(newTurn)
 
+    // guardar el tablero en el local storage
+    saveGameInStorage(newBoard, newTurn)
+
     // verificamos si hay ganador
     const newWinner = checkWinner(newBoard)
-    if(newWinner) {
+    if (newWinner) {
       confetti()
       setWinner(newWinner)
     } else if (checkEndGame(newBoard)) {
@@ -39,6 +49,9 @@ function App() {
     setBoard(Array(9).fill(null))
     setTurn(TURNS.X)
     setWinner(null)
+
+    // limpiar el local storage
+    clearGameFromStorage()
   }
 
   return (
@@ -47,7 +60,7 @@ function App() {
       <button onClick={resetGame}>Reset del juego</button>
       <Board board={board} updateBoard={updateBoard} />
       <Turns turn={turn} />
-      <WinnerModal winner={winner} resetGame={resetGame}/>
+      <WinnerModal winner={winner} resetGame={resetGame} />
     </main>
   )
 }
