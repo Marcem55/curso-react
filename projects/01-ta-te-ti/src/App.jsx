@@ -1,44 +1,11 @@
 import { useState } from 'react'
 import './App.css'
-
-const TURNS = {
-  X: 'X',
-  O: 'O',
-}
-
-const Square = ({ children, isSelected, updateBoard, index}) => {
-  const handleClick = () => {
-    updateBoard(index)
-  }
-
-  return (
-    <div className={`square ${isSelected ? 'is-selected' : ''}`} onClick={handleClick}>
-        {children}
-    </div>
-  )
-}
-
-const WINNER_COMBOS = [
-  [0, 1, 2], // horizontal
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6], // vertical
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8], // diagonal
-  [2, 4, 6],
-]
-
-const checkWinner = (board) => {
-  // recorremos las combinaciones ganadoras y vemos si alguna gano
-  for (const combo of WINNER_COMBOS) {
-    const [a, b, c] = combo
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return board[a]
-    }
-  }
-  return null
-}
+import confetti from 'canvas-confetti'
+import { TURNS } from './constants'
+import { checkEndGame, checkWinner } from './logic/board'
+import { WinnerModal } from './components/WinnerModal'
+import { Board } from './components/Board'
+import { Turns } from './components/Turns'
 
 function App() {
   const [board, setBoard] = useState(Array(9).fill(null))
@@ -61,26 +28,26 @@ function App() {
     // verificamos si hay ganador
     const newWinner = checkWinner(newBoard)
     if(newWinner) {
+      confetti()
       setWinner(newWinner)
+    } else if (checkEndGame(newBoard)) {
+      setWinner(false)
     }
+  }
+
+  const resetGame = () => {
+    setBoard(Array(9).fill(null))
+    setTurn(TURNS.X)
+    setWinner(null)
   }
 
   return (
     <main className='board'>
-      <h1>ta te ti</h1>
-      <section className='game'>
-        {board.map((cell, index) => {
-          return (
-            <Square key={index} index={index} updateBoard={updateBoard}>
-              {board[index]}
-            </Square>
-          )
-        })}
-      </section>
-      <section className='turn'>
-        <Square isSelected={turn === TURNS.X}>{TURNS.X}</Square>
-        <Square isSelected={turn === TURNS.O}>{TURNS.O}</Square>
-      </section>
+      <h1>Ta Te Ti</h1>
+      <button onClick={resetGame}>Reset del juego</button>
+      <Board board={board} updateBoard={updateBoard} />
+      <Turns turn={turn} />
+      <WinnerModal winner={winner} resetGame={resetGame}/>
     </main>
   )
 }
