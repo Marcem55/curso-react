@@ -57,7 +57,7 @@ function App() {
   return (
     <main className='board'>
       <h1>Ta Te Ti</h1>
-      <button onClick={resetGame}>Reset del juego</button>
+      <button onClick={resetGame}>Volver a empezar</button>
       <Board board={board} updateBoard={updateBoard} />
       <Turns turn={turn} />
       <WinnerModal winner={winner} resetGame={resetGame} />
